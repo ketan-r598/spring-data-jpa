@@ -1,0 +1,16 @@
+task:
+  limits:
+    max-tasks: 1000
+    max-title-length: 120
+  storage:
+    file-path: ${user.home}/tasks-prod.json
+    format: json
+  notification:
+    enabled: true
+    channel: console
+
+app:
+  cors:
+    allowed-origins:
+      - https://your-real-frontend-domain.com
+      - http://localhost:3000

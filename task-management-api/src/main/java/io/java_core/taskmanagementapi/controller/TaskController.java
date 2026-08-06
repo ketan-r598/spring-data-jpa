@@ -1,0 +1,108 @@
+package io.java_core.taskmanagementapi.controller;
+
+import io.java_core.taskmanagementapi.dto.ApiResponse;
+import io.java_core.taskmanagementapi.dto.CreateTaskRequest;
+import io.java_core.taskmanagementapi.dto.TaskResponse;
+import io.java_core.taskmanagementapi.dto.UpdateTaskRequest;
+import io.java_core.taskmanagementapi.exception.InvalidSortFieldException;
+import io.java_core.taskmanagementapi.exception.TaskNotCreatedException;
+import io.java_core.taskmanagementapi.exception.TaskNotFoundException;
+import io.java_core.taskmanagementapi.model.Task;
+import io.java_core.taskmanagementapi.model.TaskStatus;
+import io.java_core.taskmanagementapi.service.TaskService;
+import io.java_core.taskmanagementapi.utils.AppUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Comparator;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/tasks")
+public class TaskController {
+
+    private final TaskService taskService;
+
+    public TaskController(TaskService taskService) {
+        this.taskService = taskService;
+    }
+
+    @Operation(summary = "Get all tasks", description = "Returns the empty list if no task exists")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "List of task / EmptyList")
+    })
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<TaskResponse>>> getAllTasks(
+            @RequestParam(required = false, defaultValue = "") String status,
+            @RequestParam(required = false, defaultValue = "") String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        List<Task> taskList;
+        Comparator comparator = null;
+
+        // Get the comparator
+        if(!sort.isBlank()) {
+            String sortField = sort.split(",")[0].toLowerCase();
+            String sortDirection = sort.split(",")[1].toLowerCase();
+            comparator = AppUtils.getTaskComparator(sortField, sortDirection);
+        }
+
+        if (status.isBlank()) {
+            taskList = taskService.getAllTasks(page, size, comparator);
+        } else {
+            TaskStatus s = TaskStatus.valueOf(status.toUpperCase());
+            taskList = taskService.getAllTasks(s, page, size, comparator);
+        }
+
+
+        List<TaskResponse> taskResponsesList = taskList.stream()
+                .map(TaskResponse::new)
+                .toList();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.of(taskResponsesList));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<TaskResponse>> getTaskById(@PathVariable String id) {
+        return taskService.getTaskById(id)
+                .map(TaskResponse::new)
+                .map(ApiResponse::of)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new TaskNotFoundException("Task with id - " + id + " does not exist.", id))
+                ;
+
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<TaskResponse>> createTask(@Valid @RequestBody CreateTaskRequest task) {
+        try {
+            Task newTask = taskService.createTask(task.title(), task.description());
+            TaskResponse taskResponse = new TaskResponse(newTask);
+            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(taskResponse));
+        } catch (IllegalArgumentException e) {
+            throw new TaskNotCreatedException(e.getMessage(), task);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<TaskResponse>> updateTask(@PathVariable String id, @Valid @RequestBody UpdateTaskRequest task) {
+        Task t = taskService.updateTask(id, task.title(), task.description());
+
+        return ResponseEntity.ok(ApiResponse.of(new TaskResponse(t)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTask(@PathVariable String id) {
+        taskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
+    }
+}

@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: mini-project-task-management-api
+  profiles:
+    active: prod
+
+#  jackson:
+#    default-property-inclusion: non_null
+#    serialization:
+#      indent-output: true
+#      write-dates-as-timestamps: false
+#    deserialization:
+#      fail-on-unknown-properties: false
+#      accept-single-value-as-array: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,conditions  # NEVER include env/configprops in prod
+  endpoint:
+    health:
+      show-details: always   # or when-authorized in prod
+    metrics:
+      enabled: true

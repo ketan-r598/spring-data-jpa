@@ -1,0 +1,15 @@
+task:
+  limits:
+    max-tasks: 100
+    max-title-length: 120
+  storage:
+    file-path: ${user.home}/tasks-dev.json
+    format: json
+  notification:
+    enabled: true
+    channel: console
+
+app:
+  cors:
+    allowed-origins:
+      - http://localhost:3000
