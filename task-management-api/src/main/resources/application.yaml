@@ -4,14 +4,18 @@ spring:
   profiles:
     active: prod
 
-#  jackson:
-#    default-property-inclusion: non_null
-#    serialization:
-#      indent-output: true
-#      write-dates-as-timestamps: false
-#    deserialization:
-#      fail-on-unknown-properties: false
-#      accept-single-value-as-array: true
+  datasource:
+    url: jdbc:postgresql://192.168.56.4:5432/testdb
+    username: user
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
 
 management:
   endpoints:
@@ -23,3 +27,5 @@ management:
       show-details: always   # or when-authorized in prod
     metrics:
       enabled: true
+
+
