@@ -3,6 +3,9 @@ spring:
     name: mini-project-task-management-api
   profiles:
     active: prod
+  sql:
+    init:
+      mode: always
 
   datasource:
     url: jdbc:postgresql://192.168.56.4:5432/testdb
@@ -16,6 +19,7 @@ spring:
         hibernate:
           dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+    defer-datasource-initialization: true
 
 management:
   endpoints:

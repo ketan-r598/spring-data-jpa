@@ -1,0 +1,17 @@
+INSERT INTO tasks (id, title, description, status, created_at, updated_at) VALUES
+('e8c1ba59-91cb-49f1-aba9-2d7dabdd4f18', 'Set up CI pipeline', 'Configure GitHub Actions to run tests and build on every push to main', 'COMPLETED', NOW(), NOW()),
+('8fe3895a-cee9-4caa-aaae-3951fe03d3d4', 'Design database schema', 'Draft the initial ER diagram for tasks, users, and audit tables', 'COMPLETED', NOW(), NOW()),
+('580c98ca-a1b8-4130-a67d-e8b3c948d308', 'Fix N+1 query on task list endpoint', 'GET /api/v1/tasks triggers a separate query per row when fetching related audit entries', 'PENDING', NOW(), NOW()),
+('2cb53c08-f1b2-42cf-a53c-0eb8ff215c0c', 'Add pagination to audit log endpoint', 'Audit log currently returns all records unbounded, needs the same page/size pattern as tasks', 'PENDING', NOW(), NOW()),
+('4c78a26e-327c-483f-a0c2-17fc8765d298', 'Write unit tests for TaskMapper', 'Cover entity-to-domain and domain-to-entity conversion, including edge cases for null fields', 'PENDING', NOW(), NOW()),
+('8df23f34-3145-4d98-820c-28b6d2624e42', 'Migrate to Testcontainers for integration tests', 'Replace H2 in-memory database with a real Postgres container for accurate test coverage', 'PENDING', NOW(), NOW()),
+('bf2e9918-1c5e-4c3d-a531-c1e295f22b4e', 'Review pull request #42', 'Validate the new exception handling changes against the GlobalExceptionHandler conventions', 'COMPLETED', NOW(), NOW()),
+('67d3fb73-418b-4071-9d02-60de50cfc14e', 'Update API documentation', 'Add missing @ApiResponses annotations for the PUT and DELETE endpoints', 'PENDING', NOW(), NOW()),
+('db39853a-d08c-4ad0-8668-5271e3326b83', 'Investigate slow query on task search', 'Search endpoint takes over 2 seconds with more than 10k rows, needs an index review', 'PENDING', NOW(), NOW()),
+('c269a567-4cae-492d-b686-642ae48fc000', 'Set up Flyway for schema migrations', 'Replace ddl-auto=update with versioned migration scripts before production deploy', 'PENDING', NOW(), NOW()),
+('863e4ae6-45f1-4d92-b7b8-fbb59121ac02', 'Add rate limiting to public endpoints', 'Prevent abuse on unauthenticated GET endpoints using a token bucket approach', 'PENDING', NOW(), NOW()),
+('3d590140-251a-4790-8777-4f6cfcb648d7', 'Deploy staging environment', 'Stand up a staging deployment on the same infra pattern as production', 'COMPLETED', NOW(), NOW()),
+('c293d1db-0c7a-4d73-9f4d-9da361718c77', 'Refactor TaskService constructor', 'Too many dependencies being injected directly, consider extracting a facade', 'PENDING', NOW(), NOW()),
+('40ae1af8-a42e-4c76-8be0-56d8f0c82d7c', 'Add optimistic locking to Task entity', 'Prevent concurrent updates from silently overwriting each other using a @Version field', 'PENDING', NOW(), NOW()),
+('bd491d7d-fa6c-4dad-ae51-4efc77009695', 'Set up centralized logging', 'Route application logs to a searchable store instead of local file output', 'COMPLETED', NOW(), NOW()),
+('4dd536ef-418c-4249-8e5b-7886651edec0', 'Onboard new team member', 'Walk through the codebase architecture and local dev environment setup', 'COMPLETED', NOW(), NOW());

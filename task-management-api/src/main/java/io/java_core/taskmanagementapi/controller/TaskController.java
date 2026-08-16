@@ -4,7 +4,6 @@ import io.java_core.taskmanagementapi.dto.ApiResponse;
 import io.java_core.taskmanagementapi.dto.CreateTaskRequest;
 import io.java_core.taskmanagementapi.dto.TaskResponse;
 import io.java_core.taskmanagementapi.dto.UpdateTaskRequest;
-import io.java_core.taskmanagementapi.exception.InvalidSortFieldException;
 import io.java_core.taskmanagementapi.exception.TaskNotCreatedException;
 import io.java_core.taskmanagementapi.exception.TaskNotFoundException;
 import io.java_core.taskmanagementapi.model.Task;
@@ -14,13 +13,16 @@ import io.java_core.taskmanagementapi.utils.AppUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
@@ -39,25 +41,37 @@ public class TaskController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<TaskResponse>>> getAllTasks(
             @RequestParam(required = false, defaultValue = "") String status,
-            @RequestParam(required = false, defaultValue = "") String sort,
+            @RequestParam(required = false, defaultValue = "id,asc") String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         List<Task> taskList;
-        Comparator comparator = null;
+//        Comparator comparator = null;
+        String[] sortInfo = sort.split(",");
+        Pageable pageRequest;
 
-        // Get the comparator
-        if(!sort.isBlank()) {
-            String sortField = sort.split(",")[0].toLowerCase();
-            String sortDirection = sort.split(",")[1].toLowerCase();
-            comparator = AppUtils.getTaskComparator(sortField, sortDirection);
+        if(sortInfo.length == 2) {
+            if(sortInfo[1].toLowerCase().equalsIgnoreCase("desc"))
+                pageRequest = PageRequest.of(page, size,Sort.by(sortInfo[0].toLowerCase()).descending());
+            else
+                pageRequest = PageRequest.of(page, size,Sort.by(sortInfo[0].toLowerCase()).ascending());
+        } else {
+            pageRequest = PageRequest.of(page, size,Sort.by(sortInfo[0].toLowerCase()).ascending());
         }
 
+
+        // Get the comparator
+//        if(!sort.isBlank()) {
+//            String sortField = sort.split(",")[0].toLowerCase();
+//            String sortDirection = sort.split(",")[1].toLowerCase();
+//            comparator = AppUtils.getTaskComparator(sortField, sortDirection);
+//        }
+
         if (status.isBlank()) {
-            taskList = taskService.getAllTasks(page, size, comparator);
+            taskList = taskService.getAllTasks(pageRequest);
         } else {
             TaskStatus s = TaskStatus.valueOf(status.toUpperCase());
-            taskList = taskService.getAllTasks(s, page, size, comparator);
+            taskList = taskService.getAllTasks(s, pageRequest);
         }
 
 

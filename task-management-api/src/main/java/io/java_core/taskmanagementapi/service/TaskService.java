@@ -4,6 +4,7 @@ import io.java_core.taskmanagementapi.configuration.TaskProperties;
 import io.java_core.taskmanagementapi.event.TaskCompletedEvent;
 import io.java_core.taskmanagementapi.event.TaskCreatedEvent;
 import io.java_core.taskmanagementapi.exception.TaskNotFoundException;
+import io.java_core.taskmanagementapi.mapper.TaskMapper;
 import io.java_core.taskmanagementapi.model.AuditEntry;
 import io.java_core.taskmanagementapi.model.Task;
 import io.java_core.taskmanagementapi.model.TaskStatus;
@@ -13,9 +14,9 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,9 +34,10 @@ public class TaskService {
     private final TaskProperties taskProperties;
 
     private final ObjectFactory<AuditEntry> auditEntry;
+    private final TaskMapper taskMapper;
 
 
-    public TaskService(TaskRepository taskRepo, ApplicationEventPublisher eventPublisher, ObjectFactory<AuditEntry> auditEntry, TaskProperties taskProperties, MeterRegistry meterRegistry) {
+    public TaskService(TaskRepository taskRepo, ApplicationEventPublisher eventPublisher, ObjectFactory<AuditEntry> auditEntry, TaskProperties taskProperties, MeterRegistry meterRegistry, TaskMapper taskMapper) {
         this.taskRepo = taskRepo;
         this.eventPublisher = eventPublisher;
         this.auditEntry = auditEntry;
@@ -45,6 +47,7 @@ public class TaskService {
         this.createTaskTimer = Timer.builder("task.created.duration")
                 .description("Time taken to create a task")
                 .register(meterRegistry);
+        this.taskMapper = taskMapper;
     }
 
     public Task createTask(String title, String description) throws Exception {
@@ -55,8 +58,7 @@ public class TaskService {
                 throw new IllegalArgumentException("Task Limit Exceeded...");
             }
 
-            Task savedTask = taskRepo.save(new Task(UUID.randomUUID().toString(), title, description, TaskStatus.PENDING));
-
+            Task savedTask = taskMapper.toDomain(taskRepo.save(taskMapper.toEntity(new Task(UUID.randomUUID().toString(), title, description, TaskStatus.PENDING))));
 
             eventPublisher.publishEvent(new TaskCreatedEvent(this, savedTask));
 
@@ -72,12 +74,12 @@ public class TaskService {
     }
 
     public Task completeTask(String id) {
-        Task oldTask = taskRepo.findById(id)
+        Task oldTask = taskRepo.findById(id).map(taskMapper::toDomain)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid id..."));
 
         taskRepo.deleteById(id);
         Task newTask = new Task(oldTask.id(), oldTask.title(), oldTask.description(), TaskStatus.COMPLETED);
-        newTask = taskRepo.save(newTask);
+        newTask = taskMapper.toDomain(taskRepo.save(taskMapper.toEntity(newTask)));
 
         eventPublisher.publishEvent(new TaskCompletedEvent(this, newTask));
 
@@ -89,20 +91,20 @@ public class TaskService {
         return newTask;
     }
 
-    public List<Task> getAllTasks() {
-        return taskRepo.findAll();
+//    public List<Task> getAllTasks() {
+//        return taskRepo.findAll();
+//    }
+
+    public List<Task> getAllTasks(Pageable pageable) {
+        return taskRepo.findAllByColumn(pageable).stream().map(taskMapper::toDomain).toList();
     }
 
-    public List<Task> getAllTasks(int page, int size, Comparator comparator) {
-        return taskRepo.findAll(page, size, comparator);
-    }
-
-    public List<Task> getAllTasks(TaskStatus status, int page, int size, Comparator comparator) {
-        return taskRepo.findAll(status, page, size, comparator);
+    public List<Task> getAllTasks(TaskStatus status, Pageable pageable) {
+        return taskRepo.findAllByStatus(status, pageable).stream().map(taskMapper::toDomain).toList();
     }
 
     public Optional<Task> getTaskById(String id) {
-        return taskRepo.findById(id);
+        return taskRepo.findById(id).stream().map(taskMapper::toDomain).findAny();
     }
 
     public void deleteTask(String id) {
@@ -118,8 +120,8 @@ public class TaskService {
                 : description;
 
         Task updatedTask = new Task(id, title, newDescription, t.status());
-        updatedTask = taskRepo.save(updatedTask);
+        var returnTask = taskRepo.save(taskMapper.toEntity(updatedTask));
 
-        return updatedTask;
+        return taskMapper.toDomain(returnTask);
     }
 }

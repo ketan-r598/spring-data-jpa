@@ -13,9 +13,9 @@ import tools.jackson.databind.ObjectMapper;
 import java.nio.file.Path;
 import java.util.*;
 
-@Repository
-@Profile("prod")
-public class FileTaskRepository implements TaskRepository {
+//@Repository
+//@Profile("prod")
+public class FileTaskRepository {
 
     private final TaskProperties taskProperties;
     private final ObjectMapper mapper;
@@ -26,12 +26,12 @@ public class FileTaskRepository implements TaskRepository {
         this.taskProperties = taskProperties;
     }
 
-    @Override
+
     public List<Task> findAll() {
         return taskMap.values().stream().toList();
     }
 
-    @Override
+
     public List<Task> findAll(int page, int size, Comparator comparator) {
         if(comparator == null) {
             return taskMap.values()
@@ -48,7 +48,7 @@ public class FileTaskRepository implements TaskRepository {
                 .toList();
     }
 
-    @Override
+
     public List<Task> findAll(TaskStatus status, int page, int size, Comparator comparator) {
         if(comparator == null) {
             return taskMap.values()
@@ -67,18 +67,18 @@ public class FileTaskRepository implements TaskRepository {
                 .toList();
     }
 
-    @Override
+
     public Optional<Task> findById(String id) {
         return Optional.ofNullable(taskMap.get(id));
     }
 
-    @Override
+
     public Task save(Task task) {
         taskMap.put(task.id(), task);
         return taskMap.get(task.id());
     }
 
-    @Override
+
     public void deleteById(String id) {
         taskMap.remove(id);
     }
