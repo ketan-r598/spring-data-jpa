@@ -1,6 +1,5 @@
 package io.java_core.taskmanagementapi.controller;
 
-import io.java_core.taskmanagementapi.exception.InvalidSortFieldException;
 import io.java_core.taskmanagementapi.exception.TaskNotCreatedException;
 import io.java_core.taskmanagementapi.exception.TaskNotFoundException;
 import org.springframework.http.HttpStatus;

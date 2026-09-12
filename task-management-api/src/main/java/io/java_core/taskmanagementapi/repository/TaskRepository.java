@@ -15,7 +15,7 @@ public interface TaskRepository extends JpaRepository<TaskEntity, String> {
     @Query(value = "SELECT * FROM TASKS",nativeQuery = true)
     List<TaskEntity> findAllByColumn(Pageable page);
     List<TaskEntity> findAllByStatus(TaskStatus status, Pageable pageable);
-    Optional<TaskEntity> findById(String id);
-    TaskEntity save(TaskEntity taskEntity);
+//    Optional<TaskEntity> findById(String id);
+//    TaskEntity save(TaskEntity taskEntity);
     void deleteById(String id);
 }

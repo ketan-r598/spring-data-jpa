@@ -9,7 +9,6 @@ import io.java_core.taskmanagementapi.exception.TaskNotFoundException;
 import io.java_core.taskmanagementapi.model.Task;
 import io.java_core.taskmanagementapi.model.TaskStatus;
 import io.java_core.taskmanagementapi.service.TaskService;
-import io.java_core.taskmanagementapi.utils.AppUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -20,9 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
