@@ -54,10 +54,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(problemDetail);
     }
 
-    @ExceptionHandler(InvalidSortFieldException.class)
-    public ResponseEntity<ProblemDetail> handleInvalidSortParameter(InvalidSortFieldException ex) {
-        return ResponseEntity.badRequest().body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage()));
-    }
+//    @ExceptionHandler(InvalidSortFieldException.class)
+//    public ResponseEntity<ProblemDetail> handleInvalidSortParameter(InvalidSortFieldException ex) {
+//        return ResponseEntity.badRequest().body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage()));
+//    }
 
     private String formatFieldError(FieldError fieldError) {
         return fieldError.getField() + ": " + fieldError.getDefaultMessage();

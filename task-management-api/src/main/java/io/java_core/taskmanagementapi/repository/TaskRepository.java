@@ -8,14 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface TaskRepository extends JpaRepository<TaskEntity, String> {
-    @Query(value = "SELECT * FROM TASKS",nativeQuery = true)
+    @Query(value = "SELECT * FROM TASKS", nativeQuery = true)
     List<TaskEntity> findAllByColumn(Pageable page);
+
     List<TaskEntity> findAllByStatus(TaskStatus status, Pageable pageable);
-//    Optional<TaskEntity> findById(String id);
-//    TaskEntity save(TaskEntity taskEntity);
+
     void deleteById(String id);
 }

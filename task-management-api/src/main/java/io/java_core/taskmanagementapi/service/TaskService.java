@@ -10,26 +10,17 @@ import io.java_core.taskmanagementapi.model.Task;
 import io.java_core.taskmanagementapi.model.TaskEntity;
 import io.java_core.taskmanagementapi.model.TaskStatus;
 import io.java_core.taskmanagementapi.repository.TaskRepository;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 
 @Service
 public class TaskService {
-
-    private final Counter taskCreatedCounter;
-    private final Counter taskCompletedCounter;
-    private final Timer createTaskTimer;
 
     private final TaskRepository taskRepo;
     private final ApplicationEventPublisher eventPublisher;
@@ -37,47 +28,36 @@ public class TaskService {
 
     private final ObjectFactory<AuditEntry> auditEntry;
     private final TaskMapper taskMapper;
-    private final RepositoryMethodInvocationListener repositoryMethodInvocationListener;
 
 
-    public TaskService(TaskRepository taskRepo, ApplicationEventPublisher eventPublisher, ObjectFactory<AuditEntry> auditEntry, TaskProperties taskProperties, MeterRegistry meterRegistry, TaskMapper taskMapper, RepositoryMethodInvocationListener repositoryMethodInvocationListener) {
+    public TaskService(TaskRepository taskRepo, ApplicationEventPublisher eventPublisher, ObjectFactory<AuditEntry> auditEntry, TaskProperties taskProperties, TaskMapper taskMapper) {
         this.taskRepo = taskRepo;
         this.eventPublisher = eventPublisher;
         this.auditEntry = auditEntry;
         this.taskProperties = taskProperties;
-        this.taskCreatedCounter = meterRegistry.counter("task.created");
-        this.taskCompletedCounter = meterRegistry.counter("task.completed");
-        this.createTaskTimer = Timer.builder("task.created.duration")
-                .description("Time taken to create a task")
-                .register(meterRegistry);
         this.taskMapper = taskMapper;
-        this.repositoryMethodInvocationListener = repositoryMethodInvocationListener;
     }
 
-    public Task createTask(String title, String description) throws Exception {
+    public Task createTask(String title, String description) throws IllegalArgumentException {
 
-        return createTaskTimer.recordCallable(() -> {
-            System.out.println("Max task limit: " + taskProperties.getLimits().getMaxTasks());
-            if (taskRepo.findAll().size() >= taskProperties.getLimits().getMaxTasks()) {
-                throw new IllegalArgumentException("Task Limit Exceeded...");
-            }
+        if (taskRepo.findAll().size() >= taskProperties.getLimits().getMaxTasks()) {
+            throw new IllegalArgumentException("Task Limit Exceeded...");
+        }
 
-            TaskEntity newTaskEntity = new TaskEntity();
-            newTaskEntity.setTitle(title);
-            newTaskEntity.setDescription(description);
-            newTaskEntity.setStatus(TaskStatus.PENDING);
+        TaskEntity newTaskEntity = new TaskEntity();
+        newTaskEntity.setTitle(title);
+        newTaskEntity.setDescription(description);
+        newTaskEntity.setStatus(TaskStatus.PENDING);
 
-            Task savedTask = taskMapper.toDomain(taskRepo.save(newTaskEntity));
+        Task savedTask = taskMapper.toDomain(taskRepo.save(newTaskEntity));
 
-            eventPublisher.publishEvent(new TaskCreatedEvent(this, savedTask));
+        eventPublisher.publishEvent(new TaskCreatedEvent(this, savedTask));
 
-            System.out.println();
-            System.out.println(" [AUDIT] | Task Created | " + auditEntry.getObject() + " | [ " + savedTask.id() + " ]");
-            System.out.println();
+        System.out.println();
+        System.out.println(" [AUDIT] | Task Created | " + auditEntry.getObject() + " | [ " + savedTask.id() + " ]");
+        System.out.println();
 
-            taskCreatedCounter.increment();
-            return savedTask;
-        });
+        return savedTask;
 
 
     }
@@ -96,13 +76,9 @@ public class TaskService {
         System.out.println(" [AUDIT] | Task Completed | " + auditEntry.getObject() + " | [ " + newTask.id() + " ]");
         System.out.println();
 
-        taskCompletedCounter.increment();
         return newTask;
     }
 
-//    public List<Task> getAllTasks() {
-//        return taskRepo.findAll();
-//    }
 
     public List<Task> getAllTasks(Pageable pageable) {
         return taskRepo.findAllByColumn(pageable).stream().map(taskMapper::toDomain).toList();
@@ -122,22 +98,14 @@ public class TaskService {
     }
 
     public Task updateTask(String id, String title, String description) {
-//        Task t = getTaskById(id).orElseThrow(() -> new TaskNotFoundException("Task not Found", id));
-
         TaskEntity t = taskRepo.getReferenceById(id);
 
-        if(t == null) throw new TaskNotFoundException("Task Not Found",id);
+        if (t == null) throw new TaskNotFoundException("Task Not Found", id);
 
-//        String newDescription = (description == null || description.isBlank())
-//                ? t.description()
-//                : description;
-
-        if(description != null && !description.isBlank()) t.setDescription(description);
+        if (description != null && !description.isBlank()) t.setDescription(description);
         t.setTitle(title);
 
-//        Task updatedTask = new Task(id, title, newDescription, t.status());
-        var returnTask = taskMapper.toDomain(taskRepo.save(t));
+        return taskMapper.toDomain(taskRepo.save(t));
 
-        return returnTask;
     }
 }
