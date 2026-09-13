@@ -27,21 +27,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ProblemDetail> handleValidationException(MethodArgumentNotValidException exception) {
-//        System.out.println(exception.getFieldError("title").getRejectedValue());
-//        System.out.println(exception.getFieldError("title").getDefaultMessage());
-//        System.out.println(exception.getFieldError("title").getField());
-//        System.out.println(exception.getFieldError("title").getObjectName());
-//        System.out.println(exception.getFieldError("title").getField());
-//
-//
-//        System.out.println(exception.getBody());
-//        System.out.println(exception.updateAndGetBody());
-//        System.out.println(exception.getDetailMessageArguments());
-//
-//
-//        System.out.println(exception.getFieldError("description"));
-//        return ResponseEntity.badRequest().body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getBody().getDetail()));
-
         String detail = exception.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -53,11 +38,6 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(problemDetail);
     }
-
-//    @ExceptionHandler(InvalidSortFieldException.class)
-//    public ResponseEntity<ProblemDetail> handleInvalidSortParameter(InvalidSortFieldException ex) {
-//        return ResponseEntity.badRequest().body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage()));
-//    }
 
     private String formatFieldError(FieldError fieldError) {
         return fieldError.getField() + ": " + fieldError.getDefaultMessage();

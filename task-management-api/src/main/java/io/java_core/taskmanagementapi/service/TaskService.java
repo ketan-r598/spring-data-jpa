@@ -10,6 +10,7 @@ import io.java_core.taskmanagementapi.model.Task;
 import io.java_core.taskmanagementapi.model.TaskEntity;
 import io.java_core.taskmanagementapi.model.TaskStatus;
 import io.java_core.taskmanagementapi.repository.TaskRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 
 @Service
+@Slf4j
 public class TaskService {
 
     private final TaskRepository taskRepo;
@@ -53,13 +55,9 @@ public class TaskService {
 
         eventPublisher.publishEvent(new TaskCreatedEvent(this, savedTask));
 
-        System.out.println();
-        System.out.println(" [AUDIT] | Task Created | " + auditEntry.getObject() + " | [ " + savedTask.id() + " ]");
-        System.out.println();
+        log.info(" [AUDIT] | Task Created | {} | [ {} ]", auditEntry.getObject(), savedTask.id());
 
         return savedTask;
-
-
     }
 
     public Task completeTask(String id) {
@@ -72,9 +70,7 @@ public class TaskService {
 
         eventPublisher.publishEvent(new TaskCompletedEvent(this, newTask));
 
-        System.out.println();
-        System.out.println(" [AUDIT] | Task Completed | " + auditEntry.getObject() + " | [ " + newTask.id() + " ]");
-        System.out.println();
+        log.info(" [AUDIT] | Task Completed | {} | [ {} ]", auditEntry.getObject(), newTask.id());
 
         return newTask;
     }

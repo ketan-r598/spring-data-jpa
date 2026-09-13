@@ -10,5 +10,4 @@ import java.util.List;
 @ConfigurationProperties(prefix = "app.cors")
 public record CorsConfigurationProperties(
         @NotEmpty(message = "app.cors.allowed-origins must not be empty — the API is unreachable from any browser-based frontend without it")
-        List<String> allowedOrigins) {
-}
+        List<String> allowedOrigins) { }

@@ -30,19 +30,19 @@ public class TaskProperties {
         @Min(10)
         private int maxTitleLength = 50;
 
-        public @NonNull int getMaxTasks() {
+        public int getMaxTasks() {
             return maxTasks;
         }
 
-        public @NonNull int getMaxTitleLength() {
+        public int getMaxTitleLength() {
             return maxTitleLength;
         }
 
-        public void setMaxTasks(@NonNull int maxTasks) {
+        public void setMaxTasks(int maxTasks) {
             this.maxTasks = maxTasks;
         }
 
-        public void setMaxTitleLength(@NonNull int maxTitleLength) {
+        public void setMaxTitleLength(int maxTitleLength) {
             this.maxTitleLength = maxTitleLength;
         }
     }
