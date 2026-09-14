@@ -43,26 +43,17 @@ public class TaskController {
             @RequestParam(defaultValue = "10") int size) {
 
         List<Task> taskList;
-//        Comparator comparator = null;
         String[] sortInfo = sort.split(",");
         Pageable pageRequest;
 
         if(sortInfo.length == 2) {
-            if(sortInfo[1].toLowerCase().equalsIgnoreCase("desc"))
+            if(sortInfo[1].equalsIgnoreCase("desc"))
                 pageRequest = PageRequest.of(page, size,Sort.by(sortInfo[0].toLowerCase()).descending());
             else
                 pageRequest = PageRequest.of(page, size,Sort.by(sortInfo[0].toLowerCase()).ascending());
         } else {
             pageRequest = PageRequest.of(page, size,Sort.by(sortInfo[0].toLowerCase()).ascending());
         }
-
-
-        // Get the comparator
-//        if(!sort.isBlank()) {
-//            String sortField = sort.split(",")[0].toLowerCase();
-//            String sortDirection = sort.split(",")[1].toLowerCase();
-//            comparator = AppUtils.getTaskComparator(sortField, sortDirection);
-//        }
 
         if (status.isBlank()) {
             taskList = taskService.getAllTasks(pageRequest);
