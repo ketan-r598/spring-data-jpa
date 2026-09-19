@@ -46,10 +46,7 @@ public class TaskService {
             throw new IllegalArgumentException("Task Limit Exceeded...");
         }
 
-        TaskEntity newTaskEntity = new TaskEntity();
-        newTaskEntity.setTitle(title);
-        newTaskEntity.setDescription(description);
-        newTaskEntity.setStatus(TaskStatus.PENDING);
+        TaskEntity newTaskEntity = new TaskEntity(title, description, TaskStatus.PENDING);
 
         Task savedTask = taskMapper.toDomain(taskRepo.save(newTaskEntity));
 

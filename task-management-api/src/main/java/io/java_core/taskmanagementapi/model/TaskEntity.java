@@ -1,45 +1,45 @@
 package io.java_core.taskmanagementapi.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tasks")
-@NoArgsConstructor
-@Data
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class TaskEntity {
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+public class TaskEntity extends BaseEntity {
+
+    protected TaskEntity() {
+    }
+
+    public TaskEntity(String title, String description, TaskStatus status) {
+        this.title = title;
+        this.description = description;
+        this.status = status;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    String id;
+    @Column(name = "task_id")
+    private String id;
 
     @Column(nullable = false)
-    String title;
+    private String title;
 
     @Column(nullable = false)
-    String description;
+    private String description;
 
     @Enumerated(EnumType.STRING)
-    TaskStatus status;
+    private TaskStatus status;
 
-    Instant createdAt;
-    Instant updatedAt;
+    @OneToMany(mappedBy = "taskEntity",orphanRemoval = false)
+    private List<TaskAuditEntry> logs = new ArrayList<>();
 
-    @PrePersist
-    public void setCreatedAt() {
-        createdAt = Instant.now();
-        updatedAt = createdAt;
-    }
-
-    @PreUpdate
-    public void setUpdatedAt() {
-        updatedAt = Instant.now();
-    }
 }

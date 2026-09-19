@@ -55,6 +55,7 @@ public class TaskController {
             pageRequest = PageRequest.of(page, size,Sort.by(sortInfo[0].toLowerCase()).ascending());
         }
 
+
         if (status.isBlank()) {
             taskList = taskService.getAllTasks(pageRequest);
         } else {

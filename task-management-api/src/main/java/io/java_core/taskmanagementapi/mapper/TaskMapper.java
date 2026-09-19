@@ -21,19 +21,12 @@ public class TaskMapper {
     }
 
     private TaskEntity createNewEntity(Task task) {
-        TaskEntity entity = new TaskEntity();
-        entity.setTitle(task.title());
-        entity.setStatus(task.status());
-        entity.setDescription(task.description());
-        return entity;
+        return new TaskEntity(task.title(), task.description(), task.status());
     }
 
     private TaskEntity updateExistingentity(Task task) {
-        TaskEntity entity = new TaskEntity();
+        TaskEntity entity = new TaskEntity(task.title(), task.description(), task.status());
         entity.setId(task.id());
-        entity.setTitle(task.title());
-        entity.setStatus(task.status());
-        entity.setDescription(task.description());
         return entity;
     }
 }

@@ -1,4 +1,4 @@
-INSERT INTO tasks (id, title, description, status, created_at, updated_at) VALUES
+INSERT INTO tasks (task_id, title, description, status, created_timestamp, last_modified_timestamp) VALUES
 ('e8c1ba59-91cb-49f1-aba9-2d7dabdd4f18', 'Set up CI pipeline', 'Configure GitHub Actions to run tests and build on every push to main', 'COMPLETED', NOW(), NOW()),
 ('8fe3895a-cee9-4caa-aaae-3951fe03d3d4', 'Design database schema', 'Draft the initial ER diagram for tasks, users, and audit tables', 'COMPLETED', NOW(), NOW()),
 ('580c98ca-a1b8-4130-a67d-e8b3c948d308', 'Fix N+1 query on task list endpoint', 'GET /api/v1/tasks triggers a separate query per row when fetching related audit entries', 'PENDING', NOW(), NOW()),
