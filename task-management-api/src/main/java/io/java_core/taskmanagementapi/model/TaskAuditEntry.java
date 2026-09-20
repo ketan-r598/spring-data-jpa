@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "task_audit_entries")
@@ -31,5 +33,6 @@ public class TaskAuditEntry extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private TaskEntity taskEntity;
 }

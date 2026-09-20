@@ -8,6 +8,7 @@ import io.java_core.taskmanagementapi.mapper.TaskMapper;
 import io.java_core.taskmanagementapi.model.*;
 import io.java_core.taskmanagementapi.repository.TaskAuditEntryRepository;
 import io.java_core.taskmanagementapi.repository.TaskRepository;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -48,11 +49,10 @@ public class TaskService {
         }
 
         TaskEntity newTaskEntity = new TaskEntity(title, description, TaskStatus.PENDING);
-        TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.CREATED,"New task is created");
+        TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.CREATED, "New task is created");
         newTaskEntity.addLogs(taskAuditEntry);
-        taskAuditEntry.setTaskEntity(newTaskEntity);
 
-        log.info("New Task Created {}",newTaskEntity);
+        log.info("New Task Created {}", newTaskEntity);
         log.info("New Task Audit Entry Created {}", taskAuditEntry);
 
         Task savedTask = taskMapper.toDomain(taskRepo.save(newTaskEntity));
@@ -64,23 +64,24 @@ public class TaskService {
         return savedTask;
     }
 
+    @Transactional
     public Task completeTask(String id) {
-        Task oldTask = taskRepo.findById(id).map(taskMapper::toDomain)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid id..."));
+        TaskEntity task = taskRepo.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found", id));
 
-        taskRepo.deleteById(id);
-        Task newTask = new Task(oldTask.id(), oldTask.title(), oldTask.description(), TaskStatus.COMPLETED);
-        TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.UPDATED,"Task Status Updated Completed");
-        TaskEntity newTaskEntity = taskMapper.toEntity(newTask);
-        newTaskEntity.addLogs(taskAuditEntry);
-        taskAuditEntry.setTaskEntity(newTaskEntity);
+        task.setStatus(TaskStatus.COMPLETED);
 
+        TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.UPDATED, "Task Status Updated Completed");
+        task.addLogs(taskAuditEntry);
+        taskAuditEntry.setTaskEntity(task);
+
+        taskRepo.save(task);
         taskAuditEntryRepository.save(taskAuditEntry);
-        newTaskEntity = taskRepo.save(newTaskEntity);
 
-        eventPublisher.publishEvent(new TaskCompletedEvent(this, newTask));
-        log.info(" [AUDIT] | Task Completed | {} | [ {} ]", auditEntry.getObject(), newTask.id());
-        return taskMapper.toDomain(newTaskEntity);
+        Task completedTask = taskMapper.toDomain(task);
+        eventPublisher.publishEvent(new TaskCompletedEvent(this, completedTask));
+        log.info(" [AUDIT] | Task Completed | {} | [ {} ]", auditEntry.getObject(), task.getId());
+        return completedTask;
     }
 
 
@@ -109,8 +110,7 @@ public class TaskService {
         if (t == null) throw new TaskNotFoundException("Task Not Found", id);
         if (description != null && !description.isBlank()) t.setDescription(description);
         t.setTitle(title);
-        TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.UPDATED,"Task is updated");
-        taskAuditEntry.setTaskEntity(t);
+        TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.UPDATED, "Task is updated");
         t.addLogs(taskAuditEntry);
         log.info("Task is updated...");
         taskAuditEntryRepository.save(taskAuditEntry);

@@ -43,6 +43,7 @@ public class TaskEntity extends BaseEntity {
     private List<TaskAuditEntry> logs = new ArrayList<>();
 
     public void addLogs(TaskAuditEntry taskAuditEntry) {
+        taskAuditEntry.setTaskEntity(this);
         logs.add(taskAuditEntry);
     }
 
