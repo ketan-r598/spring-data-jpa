@@ -42,4 +42,8 @@ public class TaskEntity extends BaseEntity {
     @OneToMany(mappedBy = "taskEntity",orphanRemoval = false)
     private List<TaskAuditEntry> logs = new ArrayList<>();
 
+    public void addLogs(TaskAuditEntry taskAuditEntry) {
+        logs.add(taskAuditEntry);
+    }
+
 }

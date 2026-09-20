@@ -5,10 +5,8 @@ import io.java_core.taskmanagementapi.event.TaskCompletedEvent;
 import io.java_core.taskmanagementapi.event.TaskCreatedEvent;
 import io.java_core.taskmanagementapi.exception.TaskNotFoundException;
 import io.java_core.taskmanagementapi.mapper.TaskMapper;
-import io.java_core.taskmanagementapi.model.AuditEntry;
-import io.java_core.taskmanagementapi.model.Task;
-import io.java_core.taskmanagementapi.model.TaskEntity;
-import io.java_core.taskmanagementapi.model.TaskStatus;
+import io.java_core.taskmanagementapi.model.*;
+import io.java_core.taskmanagementapi.repository.TaskAuditEntryRepository;
 import io.java_core.taskmanagementapi.repository.TaskRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectFactory;
@@ -30,14 +28,17 @@ public class TaskService {
 
     private final ObjectFactory<AuditEntry> auditEntry;
     private final TaskMapper taskMapper;
+    private final TaskAuditEntryRepository taskAuditEntryRepository;
 
 
-    public TaskService(TaskRepository taskRepo, ApplicationEventPublisher eventPublisher, ObjectFactory<AuditEntry> auditEntry, TaskProperties taskProperties, TaskMapper taskMapper) {
+    public TaskService(TaskRepository taskRepo, ApplicationEventPublisher eventPublisher, ObjectFactory<AuditEntry> auditEntry, TaskProperties taskProperties, TaskMapper taskMapper,
+                       TaskAuditEntryRepository taskAuditEntryRepository) {
         this.taskRepo = taskRepo;
         this.eventPublisher = eventPublisher;
         this.auditEntry = auditEntry;
         this.taskProperties = taskProperties;
         this.taskMapper = taskMapper;
+        this.taskAuditEntryRepository = taskAuditEntryRepository;
     }
 
     public Task createTask(String title, String description) throws IllegalArgumentException {
@@ -47,11 +48,17 @@ public class TaskService {
         }
 
         TaskEntity newTaskEntity = new TaskEntity(title, description, TaskStatus.PENDING);
+        TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.CREATED,"New task is created");
+        newTaskEntity.addLogs(taskAuditEntry);
+        taskAuditEntry.setTaskEntity(newTaskEntity);
+
+        log.info("New Task Created {}",newTaskEntity);
+        log.info("New Task Audit Entry Created {}", taskAuditEntry);
 
         Task savedTask = taskMapper.toDomain(taskRepo.save(newTaskEntity));
+        taskAuditEntryRepository.save(taskAuditEntry);
 
         eventPublisher.publishEvent(new TaskCreatedEvent(this, savedTask));
-
         log.info(" [AUDIT] | Task Created | {} | [ {} ]", auditEntry.getObject(), savedTask.id());
 
         return savedTask;
@@ -63,13 +70,17 @@ public class TaskService {
 
         taskRepo.deleteById(id);
         Task newTask = new Task(oldTask.id(), oldTask.title(), oldTask.description(), TaskStatus.COMPLETED);
-        newTask = taskMapper.toDomain(taskRepo.save(taskMapper.toEntity(newTask)));
+        TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.UPDATED,"Task Status Updated Completed");
+        TaskEntity newTaskEntity = taskMapper.toEntity(newTask);
+        newTaskEntity.addLogs(taskAuditEntry);
+        taskAuditEntry.setTaskEntity(newTaskEntity);
+
+        taskAuditEntryRepository.save(taskAuditEntry);
+        newTaskEntity = taskRepo.save(newTaskEntity);
 
         eventPublisher.publishEvent(new TaskCompletedEvent(this, newTask));
-
         log.info(" [AUDIT] | Task Completed | {} | [ {} ]", auditEntry.getObject(), newTask.id());
-
-        return newTask;
+        return taskMapper.toDomain(newTaskEntity);
     }
 
 
@@ -86,19 +97,23 @@ public class TaskService {
     }
 
     public void deleteTask(String id) {
-        taskRepo.findById(id).orElseThrow(() -> new TaskNotFoundException("Task not found", id));
+        TaskEntity taskEntity = taskRepo.findById(id).orElseThrow(() -> new TaskNotFoundException("Task not found", id));
+        TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.UPDATED, "Task is deleted: " + taskEntity);
+        taskAuditEntry.setTaskEntity(taskEntity);
+        taskAuditEntryRepository.save(taskAuditEntry);
         taskRepo.deleteById(id);
     }
 
     public Task updateTask(String id, String title, String description) {
         TaskEntity t = taskRepo.getReferenceById(id);
-
         if (t == null) throw new TaskNotFoundException("Task Not Found", id);
-
         if (description != null && !description.isBlank()) t.setDescription(description);
         t.setTitle(title);
-
+        TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.UPDATED,"Task is updated");
+        taskAuditEntry.setTaskEntity(t);
+        t.addLogs(taskAuditEntry);
+        log.info("Task is updated...");
+        taskAuditEntryRepository.save(taskAuditEntry);
         return taskMapper.toDomain(taskRepo.save(t));
-
     }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface TaskRepository extends JpaRepository<TaskEntity, String> {
-    @Query(value = "SELECT * FROM TASKS", nativeQuery = true)
+    @Query(value = "SELECT t FROM TaskEntity t")
     List<TaskEntity> findAllByColumn(Pageable page);
 
     List<TaskEntity> findAllByStatus(TaskStatus status, Pageable pageable);

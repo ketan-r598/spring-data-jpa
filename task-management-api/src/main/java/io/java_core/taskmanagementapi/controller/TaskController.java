@@ -46,13 +46,13 @@ public class TaskController {
         String[] sortInfo = sort.split(",");
         Pageable pageRequest;
 
-        if(sortInfo.length == 2) {
-            if(sortInfo[1].equalsIgnoreCase("desc"))
-                pageRequest = PageRequest.of(page, size,Sort.by(sortInfo[0].toLowerCase()).descending());
+        if (sortInfo.length == 2) {
+            if (sortInfo[1].equalsIgnoreCase("desc"))
+                pageRequest = PageRequest.of(page, size, Sort.by(sortInfo[0].toLowerCase()).descending());
             else
-                pageRequest = PageRequest.of(page, size,Sort.by(sortInfo[0].toLowerCase()).ascending());
+                pageRequest = PageRequest.of(page, size, Sort.by(sortInfo[0].toLowerCase()).ascending());
         } else {
-            pageRequest = PageRequest.of(page, size,Sort.by(sortInfo[0].toLowerCase()).ascending());
+            pageRequest = PageRequest.of(page, size, Sort.by(sortInfo[0].toLowerCase()).ascending());
         }
 
 
