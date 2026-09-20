@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class TaskMapper {
 
     public Task toDomain(TaskEntity entity) {
-        Task newTask = new Task(entity.getId(), entity.getTitle(), entity.getDescription(), entity.getStatus());
+        Task newTask = new Task(entity.getId(), entity.getTitle(), entity.getDescription(), entity.getStatus(), entity.getLogs().size());
         return newTask;
     }
 
