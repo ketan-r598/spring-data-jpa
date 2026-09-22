@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,7 @@ public class TaskEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
+    @BatchSize(size=20)
     @OneToMany(mappedBy = "taskEntity",orphanRemoval = false)
     private List<TaskAuditEntry> logs = new ArrayList<>();
 

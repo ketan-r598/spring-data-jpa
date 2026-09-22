@@ -8,12 +8,12 @@ import io.java_core.taskmanagementapi.mapper.TaskMapper;
 import io.java_core.taskmanagementapi.model.*;
 import io.java_core.taskmanagementapi.repository.TaskAuditEntryRepository;
 import io.java_core.taskmanagementapi.repository.TaskRepository;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +42,7 @@ public class TaskService {
         this.taskAuditEntryRepository = taskAuditEntryRepository;
     }
 
+    @Transactional
     public Task createTask(String title, String description) throws IllegalArgumentException {
 
         if (taskRepo.findAll().size() >= taskProperties.getLimits().getMaxTasks()) {
@@ -84,19 +85,22 @@ public class TaskService {
         return completedTask;
     }
 
-
+    @Transactional(readOnly = true)
     public List<Task> getAllTasks(Pageable pageable) {
         return taskRepo.findAllByColumn(pageable).stream().map(taskMapper::toDomain).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<Task> getAllTasks(TaskStatus status, Pageable pageable) {
         return taskRepo.findAllByStatus(status, pageable).stream().map(taskMapper::toDomain).toList();
     }
 
+    @Transactional(readOnly = true)
     public Optional<Task> getTaskById(String id) {
         return taskRepo.findById(id).stream().map(taskMapper::toDomain).findAny();
     }
 
+    @Transactional
     public void deleteTask(String id) {
         TaskEntity taskEntity = taskRepo.findById(id).orElseThrow(() -> new TaskNotFoundException("Task not found", id));
         TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.UPDATED, "Task is deleted: " + taskEntity);
@@ -105,9 +109,10 @@ public class TaskService {
         taskRepo.deleteById(id);
     }
 
+    @Transactional
     public Task updateTask(String id, String title, String description) {
         TaskEntity t = taskRepo.getReferenceById(id);
-        if (t == null) throw new TaskNotFoundException("Task Not Found", id);
+//        if (t == null) throw new TaskNotFoundException("Task Not Found", id);
         if (description != null && !description.isBlank()) t.setDescription(description);
         t.setTitle(title);
         TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.UPDATED, "Task is updated");
