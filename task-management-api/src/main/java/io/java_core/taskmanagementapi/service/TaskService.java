@@ -45,7 +45,7 @@ public class TaskService {
     @Transactional
     public Task createTask(String title, String description) throws IllegalArgumentException {
 
-        if (taskRepo.findAll().size() >= taskProperties.getLimits().getMaxTasks()) {
+        if (taskRepo.count() >= taskProperties.getLimits().getMaxTasks()) {
             throw new IllegalArgumentException("Task Limit Exceeded...");
         }
 
@@ -111,8 +111,8 @@ public class TaskService {
 
     @Transactional
     public Task updateTask(String id, String title, String description) {
-        TaskEntity t = taskRepo.getReferenceById(id);
-//        if (t == null) throw new TaskNotFoundException("Task Not Found", id);
+        TaskEntity t = taskRepo.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found", id));
         if (description != null && !description.isBlank()) t.setDescription(description);
         t.setTitle(title);
         TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.UPDATED, "Task is updated");
