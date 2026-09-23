@@ -113,6 +113,13 @@ public class TaskService {
     public Task updateTask(String id, String title, String description) {
         TaskEntity t = taskRepo.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found", id));
+
+        try {
+            Thread.sleep(8000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         if (description != null && !description.isBlank()) t.setDescription(description);
         t.setTitle(title);
         TaskAuditEntry taskAuditEntry = new TaskAuditEntry(TaskAction.UPDATED, "Task is updated");

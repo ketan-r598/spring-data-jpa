@@ -40,6 +40,9 @@ public class TaskEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
+    @Version
+    private Long version;
+
     @BatchSize(size=20)
     @OneToMany(mappedBy = "taskEntity",orphanRemoval = false)
     private List<TaskAuditEntry> logs = new ArrayList<>();

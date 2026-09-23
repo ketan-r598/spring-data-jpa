@@ -8,9 +8,9 @@ spring:
       mode: always
 
   datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/postgres
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://192.168.56.4:5432/testdb
+    username: user
+    password: password
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

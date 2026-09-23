@@ -2,9 +2,12 @@ package io.java_core.taskmanagementapi.controller;
 
 import io.java_core.taskmanagementapi.exception.TaskNotCreatedException;
 import io.java_core.taskmanagementapi.exception.TaskNotFoundException;
+import org.hibernate.dialect.lock.OptimisticEntityLockException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -18,6 +21,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TaskNotFoundException.class)
     public ResponseEntity<ProblemDetail> handleNotFound(TaskNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ProblemDetail> handleOptimisticLockFailure(ObjectOptimisticLockingFailureException ex) {
+        return ResponseEntity.status(HttpStatusCode.valueOf(409)).body(ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(409),ex.getMessage()));
     }
 
     @ExceptionHandler(TaskNotCreatedException.class)
